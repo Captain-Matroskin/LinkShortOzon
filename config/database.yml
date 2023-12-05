@@ -1,0 +1,12 @@
+db_postgres:
+  host: 127.0.0.1
+  port: 5432
+  username: Captain-matroskin
+  password: 74tbr6r54f78
+  schemaname: postgres
+
+db_redis:
+  host: 127.0.0.1
+  port: 6379
+  network: tcp
+  password: p@ss$12E45

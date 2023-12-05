@@ -39,6 +39,15 @@ const (
 	ErrInternal        = "err internal"
 )
 
+// Error of main
+const (
+	MCreateDBNotConnect           = "db not connect"
+	MCreateDBTransactionNotCreate = "transaction setup not create"
+	MCreateDBFileNotFound         = "createtables.sql not found"
+	MCreateDBFileNotCreate        = "table not create"
+	MCreateDBNotCommit            = "transaction setup not commit"
+)
+
 // Error of LinkShort
 const (
 	LSHCreateLinkShortTransactionNotCreate = "transaction Create Link Short not create CreateLinkShortPostgres"
