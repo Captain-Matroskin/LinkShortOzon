@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+option go_package = "./";
+
+package proto;
+
+message LinkShort {
+  string link_short = 1;
+}
+
+message LinkFull {
+  string link_full = 1;
+}
+
+message ResultLinkShort {
+  int64 status_code = 1;
+  LinkShort body = 2;
+  string error = 3;
+}
+
+message ResultLinkFull {
+  int64 status_code = 1;
+  LinkFull body = 2;
+  string error = 3;
+}
+
+service LinkShortService {
+  rpc CreateLinkShort(LinkFull) returns (ResultLinkShort);
+  rpc TakeLinkFull(LinkShort) returns (ResultLinkFull);
+}
