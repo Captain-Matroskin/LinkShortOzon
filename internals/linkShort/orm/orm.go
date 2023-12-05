@@ -2,8 +2,10 @@ package orm
 
 import (
 	"context"
+	"github.com/gomodule/redigo/redis"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgx/v4"
+	errPkg "linkShortOzon/internals/myerror"
 )
 
 type LinkShortWrapperInterface interface {
@@ -53,25 +55,135 @@ type LinkShortWrapper struct {
 }
 
 func (w *LinkShortWrapper) CreateLinkShort(linkFull string, linkShort string) error {
-	return nil
+	if w.ConnPostgres != nil {
+		return w.CreateLinkShortPostgres(linkFull, linkShort)
+	}
+	if w.ConnRedis != nil {
+		return w.CreateLinkShortRedis(linkFull, linkShort)
+	}
+
+	return &errPkg.MyErrors{
+		Text: errPkg.LSHCreateLinkShortNilConn,
+	}
 }
 
 func (w *LinkShortWrapper) TakeLinkFull(linkShort string) (string, error) {
-	return "", nil
+	if w.ConnPostgres != nil {
+		return w.TakeLinkFullPostgres(linkShort)
+	}
+	if w.ConnRedis != nil {
+		return w.TakeLinkFullRedis(linkShort)
+	}
+
+	return "", &errPkg.MyErrors{
+		Text: errPkg.LSHTakeLinkShortNilConn,
+	}
 }
 
 func (w *LinkShortWrapper) CreateLinkShortRedis(linkFull string, linkShort string) error {
+	full, _ := w.TakeLinkFullRedis(linkFull)
+	if full != "" {
+		return &errPkg.MyErrors{
+			Text: errPkg.LSHCreateLinkShortExistsRedis,
+		}
+	}
+
+	_, errLinkFull := redis.String(w.ConnRedis.Do("SET", linkFull, linkShort, "EX", 86400))
+	if errLinkFull != nil {
+		return &errPkg.MyErrors{
+			Text: errPkg.LSHCreateLinkShortNotSetFullLinkRedis,
+		}
+	}
+
+	_, errLinkShort := redis.String(w.ConnRedis.Do("SET", linkShort, linkFull, "EX", 86400))
+	if errLinkShort != nil {
+		return &errPkg.MyErrors{
+			Text: errPkg.LSHCreateLinkShortNotSetShortLinkRedis,
+		}
+	}
+
 	return nil
 }
 
 func (w *LinkShortWrapper) TakeLinkFullRedis(linkShort string) (string, error) {
-	return "", nil
+	resultGet, errGet := redis.Bytes(w.ConnRedis.Do("GET", linkShort))
+	if errGet != nil {
+		return "", &errPkg.MyErrors{
+			Text: errPkg.LSHTakeLinkShortNotFoundRedis,
+		}
+	}
+
+	return string(resultGet), nil
 }
 
 func (w *LinkShortWrapper) CreateLinkShortPostgres(linkFull string, linkShort string) error {
+	contextTransaction := context.Background()
+	tx, errBeginConn := w.ConnPostgres.Begin(contextTransaction)
+	if errBeginConn != nil {
+		return &errPkg.MyErrors{
+			Text: errPkg.LSHCreateLinkShortTransactionNotCreate,
+		}
+	}
+
+	defer tx.Rollback(contextTransaction)
+
+	_, errExecTx := tx.Exec(contextTransaction,
+		"INSERT INTO public.link (link, link_short) VALUES ($1, $2)", linkFull, linkShort)
+	if errExecTx != nil {
+		switch errExecTx.Error() {
+		case errPkg.LSHCreateLinkShortNotInsertUniqueDB:
+			return &errPkg.MyErrors{
+				Text: errPkg.LSHCreateLinkShortNotInsertUnique,
+			}
+		default:
+			return &errPkg.MyErrors{
+				Text: errPkg.LSHCreateLinkShortNotInsert,
+			}
+		}
+	}
+
+	errCommitTx := tx.Commit(contextTransaction)
+	if errCommitTx != nil {
+		return &errPkg.MyErrors{
+			Text: errPkg.LSHCreateLinkShortNotCommit,
+		}
+	}
+
 	return nil
 }
 
 func (w *LinkShortWrapper) TakeLinkFullPostgres(linkShort string) (string, error) {
-	return "", nil
+	contextTransaction := context.Background()
+	tx, errBeginConn := w.ConnPostgres.Begin(contextTransaction)
+	if errBeginConn != nil {
+		return "", &errPkg.MyErrors{
+			Text: errPkg.LSHTakeLinkShortTransactionNotCreate,
+		}
+	}
+
+	defer tx.Rollback(contextTransaction)
+
+	var linkFull string
+	errQueryRow := tx.QueryRow(contextTransaction,
+		"SELECT link FROM public.link WHERE link_short = $1",
+		linkShort).Scan(&linkFull)
+	if errQueryRow != nil {
+		if errQueryRow == pgx.ErrNoRows {
+			return "", &errPkg.MyErrors{
+				Text: errPkg.LSHTakeLinkShortNotFound,
+			}
+		}
+		return "", &errPkg.MyErrors{
+			Text: errPkg.LSHTakeLinkShortNotScan,
+		}
+	}
+
+	errCommitTx := tx.Commit(contextTransaction)
+	if errCommitTx != nil {
+		return "", &errPkg.MyErrors{
+			Text: errPkg.LSHTakeLinkShortNotCommit,
+		}
+	}
+
+	return linkFull, nil
 }

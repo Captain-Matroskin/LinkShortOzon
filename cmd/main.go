@@ -39,7 +39,7 @@ func runServer() {
 	//linkShort.GET("/", linkShortApi.TakeLinkShortHandler)
 	//myRouter.GET("/health", )
 
-	errStart := fasthttp.ListenAndServe(":200", myRouter.Handler)
+	errStart := fasthttp.ListenAndServe(":2000", myRouter.Handler)
 	if errStart != nil {
 		logger.Log.Errorf("Listen and server http error: %v", errStart)
 		os.Exit(2)
