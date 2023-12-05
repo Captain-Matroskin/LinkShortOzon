@@ -6,10 +6,13 @@ import (
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/valyala/fasthttp"
 	"go.uber.org/zap"
+	"google.golang.org/grpc"
 	"linkShortOzon/build"
 	"linkShortOzon/config"
 	errPkg "linkShortOzon/internals/myerror"
+	proto "linkShortOzon/internals/proto"
 	"linkShortOzon/internals/util"
+	"net"
 	"os"
 )
 
@@ -91,6 +94,26 @@ func runServer() {
 	linkShort.POST("/", linkShortApi.CreateLinkShortHandler)
 	linkShort.GET("/", linkShortApi.TakeLinkShortHandler)
 	//myRouter.GET("/health", )
+	addresGrpc := configMain.Main.HostGrpc + ":" + configMain.Main.PortGrpc
+
+	listen, errListen := net.Listen(configMain.Main.Network, addresGrpc)
+	if errListen != nil {
+		logger.Log.Errorf("Server listen grpc error: %v", errListen)
+		os.Exit(1)
+	}
+	server := grpc.NewServer()
+
+	proto.RegisterLinkShortServiceServer(server, &startStructure.LinkShortManager)
+
+	go func() {
+		logger.Log.Infof("Listen in %s", addresGrpc)
+		errServ := server.Serve(listen)
+		if errServ != nil {
+			logger.Log.Errorf("Server serv grpc error: %v", errServ)
+			os.Exit(1)
+		}
+
+	}()
 
 	addresHttp := ":" + configMain.Main.PortHttp
 
