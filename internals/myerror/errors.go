@@ -26,6 +26,19 @@ type ResultError struct {
 	Explain string `json:"explain,omitempty"`
 }
 
+// Error of server
+const (
+	ErrDB              = "database is not responding"
+	ErrAtoi            = "func Atoi convert string in int"
+	IntNil             = 0
+	ErrNotStringAndInt = "expected type string or int"
+	ErrUnmarshal       = "unmarshal json"
+	ErrMarshal         = "marshaling in json"
+	ErrCheck           = "err check"
+	ErrEncode          = "Encode"
+	ErrInternal        = "err internal"
+)
+
 // Error of LinkShort
 const (
 	LSHCreateLinkShortTransactionNotCreate = "transaction Create Link Short not create CreateLinkShortPostgres"
