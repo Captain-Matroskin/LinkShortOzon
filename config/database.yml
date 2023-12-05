@@ -1,13 +1,13 @@
 db_postgres:
-  host: 127.0.0.1
-  port: 5432
-  username: Captain-matroskin
+  host: PostgresInfo
+  port: 5435
+  username: matroskin
   password: 74tbr6r54f78
   schemaname: postgres
 
 db_redis:
-  host: 127.0.0.1
-  port: 6379
+  host: RedisInfo
+  port: 6382
   network: tcp
-  password: 
+  password: p@ss$12E45
 #  password: p@ss$12E45

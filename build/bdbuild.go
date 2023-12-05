@@ -15,9 +15,7 @@ func CreateConn(configDB config.DatabasePostgres) (*pgxpool.Pool, error) {
 
 	conn, errCreateConn := pgxpool.Connect(context.Background(), addressPostgres)
 	if errCreateConn != nil {
-		return nil, &errPkg.MyErrors{
-			Text: errPkg.MCreateDBNotConnect,
-		}
+		return nil, errCreateConn
 	}
 	return conn, nil
 }

@@ -1,5 +1,5 @@
 # Builder
-FROM golang:1.20-alpine3.13 AS builderLinkShort
+FROM golang:1.20.12-alpine3.18 AS builderLinkShort
 WORKDIR /cont
 COPY go.mod .
 COPY go.sum .
@@ -8,7 +8,7 @@ RUN go mod download
 COPY . .
 RUN apk update && apk upgrade && \
     apk --update add git make
-RUN go build -o linkShort ./cmd/main.go
+RUN go build -o linkshort ./cmd/main.go
 
 FROM alpine:latest
 RUN apk update && apk upgrade && \
@@ -16,6 +16,6 @@ RUN apk update && apk upgrade && \
     mkdir /app
 WORKDIR /app
 
-COPY --from=builderLinkShort ./cont/linkShort /app
+COPY --from=builderLinkShort ./cont/linkshort /app
 
-CMD ["/app/linkShort"]
+CMD ["/app/linkshort"]

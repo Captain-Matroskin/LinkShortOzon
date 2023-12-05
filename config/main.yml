@@ -1,6 +1,6 @@
 main:
-  hostGrpc: 127.0.0.1
+  hostGrpc: linkshort
   portGrpc: 8081
   network: tcp
-  portHttp: 5000
-  database: redis
+  portHttp: 5001
+  database: postgres
