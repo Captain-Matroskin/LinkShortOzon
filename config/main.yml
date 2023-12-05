@@ -1,0 +1,6 @@
+main:
+  hostGrpc: 127.0.0.1
+  portGrpc: 8081
+  network: tcp
+  portHttp: 5000
+  database: redis
