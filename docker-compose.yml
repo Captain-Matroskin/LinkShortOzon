@@ -1,0 +1,33 @@
+services:
+  linkShort:
+    depends_on:
+      postgres:
+        condition: service_healthy
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: LinkShort
+    logging:
+      driver: syslog
+      options:
+        tag: foo-logs
+    ports:
+      - "5000:5000"
+      - "40000:40000"
+    volumes:
+      - ./config/main.yml:/app/config/main.yml
+      - ./config/database.yml:/app/config/database.yml
+
+  postgres:
+    container_name: BackInfo
+    image: postgres:latest
+    environment:
+      - POSTGRES_USER=constantil
+      - POSTGRES_PASSWORD=293456QwErty
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U constantil" ]
+      interval: 5s
+      timeout: 105s
+      retries: 5
