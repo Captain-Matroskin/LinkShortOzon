@@ -5,7 +5,14 @@
 
 Работу выполнил - Жданов Никита.
 
-## Примеры запросов
+## Запуск проекта
+
+Запуск проекта происходит через *Docker* контейнеры посредством *docker-compose.yml*
+```
+docker-compose -f docker-compose.yml up -d --build
+```
+
+## Примеры работы с сервисом
 
 Отправка POST запроса на сокращение ссылки:
 ```
@@ -24,10 +31,3 @@ curl --header "Content-Type: application/json" \
   0.0.0.0:5001/api/v1/linkShort/
 ```
 где *$shortLink$* - это готовая сокращенная ссылка (например "ozon.click.ru/_FeLIUZ33Y").
-
-## Запуска проекта
-
-Запуск проекта происходит через *Docker* контейнеры посредством *docker-compose.yml*
-```
-docker-compose -f docker-compose.yml up -d --build
-```
