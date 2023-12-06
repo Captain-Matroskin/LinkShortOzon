@@ -1,8 +1,8 @@
 db_postgres:
-  host: PostgresInfo
-  port: 5435
+  host: BackInfo
+  port: 5432
   username: matroskin
-  password: 74tbr6r54f78
+  password: 74tbr6r54f
   schemaname: postgres
 
 db_redis:
