@@ -1,7 +1,10 @@
+//go:generate mockgen -destination=mocks/api.go -package=mocks LinkShortOzon/internals/myerror MultiLoggerInterface
+//go:generate mockgen -destination=mocks/apiApplication.go -package=mocks LinkShortOzon/internals/linkShort/application LinkShortAppInterface
 package api
 
 import (
 	"encoding/json"
+	_ "github.com/golang/mock/mockgen/model"
 	"github.com/valyala/fasthttp"
 	"linkShortOzon/internals/linkShort"
 	"linkShortOzon/internals/linkShort/application"

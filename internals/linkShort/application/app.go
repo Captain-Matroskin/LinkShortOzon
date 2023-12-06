@@ -1,3 +1,4 @@
+// /go:generate mockgen -destination=mocks/application.go -package=mocks LinkShortOzon/internals/linkShort/orm LinkShortWrapperInterface
 package application
 
 import (
