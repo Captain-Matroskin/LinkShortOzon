@@ -7,7 +7,7 @@ db_postgres:
 
 db_redis:
   host: RedisInfo
-  port: 6382
+  port: 6379
   network: tcp
-  password: p@ss$12E45
+  password:
 #  password: p@ss$12E45

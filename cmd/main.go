@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"github.com/fasthttp/router"
 	"github.com/gomodule/redigo/redis"
 	"github.com/jackc/pgx/v4/pgxpool"
@@ -57,7 +56,6 @@ func runServer() {
 		var errDB error
 		connectionPostgres, errDB = build.CreateConn(configDB.DbPostgres)
 		if errDB != nil {
-			fmt.Printf("%v", errDB.Error())
 			logger.Log.Errorf("Err connect database: %s", errDB.Error())
 			os.Exit(3)
 		}
@@ -69,6 +67,7 @@ func runServer() {
 			os.Exit(4)
 		}
 		startStructure = build.SetUp(connectionPostgres, nil, logger.Log)
+		logger.Log.Infof("postgres listen %s:%s", configDB.DbPostgres.Host, configDB.DbPostgres.Port)
 	case nameRedis:
 		var errConn error
 		address := configDB.DbRedis.Host + ":" + configDB.DbRedis.Port
@@ -77,11 +76,11 @@ func runServer() {
 			redis.DialPassword(configDB.DbRedis.Password),
 		)
 		if errConn != nil {
-			fmt.Printf("%v", errConn.Error())
 			logger.Log.Errorf("err create database: %s", errConn.Error())
 			os.Exit(5)
 		}
 		startStructure = build.SetUp(nil, redisConn, logger.Log)
+		logger.Log.Infof("redis listen %s:%s", configDB.DbRedis.Host, configDB.DbRedis.Port)
 	default:
 		logger.Log.Errorf("data base not selected")
 		os.Exit(6)
