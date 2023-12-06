@@ -18,8 +18,9 @@ const (
 )
 
 type InstallSetUp struct {
-	LinkShort api.LinkShortApi
-	Middle    apiMiddle.MiddlewareApi
+	LinkShort        api.LinkShortApi
+	Middle           apiMiddle.MiddlewareApi
+	LinkShortManager api.LinkShortManager
 }
 
 func SetUp(connectionDB orm.ConnectionPostgresInterface, redisConn orm.ConnectionRedisInterface, logger errPkg.MultiLoggerInterface) *InstallSetUp {
@@ -40,10 +41,16 @@ func SetUp(connectionDB orm.ConnectionPostgresInterface, redisConn orm.Connectio
 		Logger: logger,
 	}
 	var _ apiMiddle.MiddlewareApiInterface = &middlewareApi
+	linkShortManager := api.LinkShortManager{
+		Application: &linkShortApp,
+		Logger:      logger,
+	}
+	var _ api.LinkShortManagerInterface = &linkShortManager
 
 	var result InstallSetUp
 	result.LinkShort = linkShortApi
 	result.Middle = middlewareApi
+	result.LinkShortManager = linkShortManager
 
 	return &result
 }
