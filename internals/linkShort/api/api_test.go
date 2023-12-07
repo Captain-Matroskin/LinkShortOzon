@@ -1,6 +1,7 @@
 package api
 
 import (
+	"errors"
 	"fmt"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
@@ -12,7 +13,8 @@ import (
 
 type testApiCreateLinkShortHandler struct {
 	testName      string
-	reqId         int
+	reqId         interface{}
+	reqIdInt      int
 	body          []byte
 	logger        testLogger
 	App           testAppCreateLinkShort
@@ -32,8 +34,8 @@ type testLogger struct {
 //}
 
 type loggerErrorf struct {
-	args   []interface{}
 	format string
+	args   []interface{}
 	count  int
 }
 
@@ -56,10 +58,37 @@ var createLinkShortHandler = []testApiCreateLinkShortHandler{
 	{
 		testName: "Successful CreateLinkShort handler",
 		reqId:    10,
+		reqIdInt: 10,
 		body:     []byte("{\"link\":\"www.site.ru\"}"),
 		logger: testLogger{
 			errorf: loggerErrorf{count: 0},
 		},
+		App: testAppCreateLinkShort{
+			in:        "www.site.ru",
+			outResult: "hf89h4qwer",
+			outErr:    nil,
+			count:     1,
+		},
+		checkError: testCheckErrorCreateLSH{
+			inError:     nil,
+			outErr:      nil,
+			outResult:   nil,
+			outCodeHTTP: errPkg.IntNil,
+			count:       1,
+		},
+		countSetReqId: 1,
+		outBody:       []byte("{\"status\":201,\"body\":{\"link_short\":{\"link\":\"hf89h4qwer\"}}}"),
+	},
+	{
+		testName: "Error request id",
+		reqId:    nil,
+		reqIdInt: 0,
+		body:     []byte("{\"link\":\"www.site.ru\"}"),
+		logger: testLogger{errorf: loggerErrorf{
+			format: "%s",
+			args:   []interface{}{"expected type string or int"},
+			count:  1,
+		}},
 		App: testAppCreateLinkShort{
 			in:        "www.site.ru",
 			outResult: "hf89h4qwer",
@@ -107,10 +136,17 @@ func TestCreateLinkShortHandler(t *testing.T) {
 			Return(curTest.App.outResult, curTest.App.outErr).
 			Times(curTest.App.count)
 
-		mockCheckError.
-			EXPECT().
-			SetRequestIdUser(curTest.reqId).
-			Times(curTest.countSetReqId)
+		if curTest.reqIdInt != errPkg.IntNil {
+			mockCheckError.
+				EXPECT().
+				SetRequestIdUser(curTest.reqId).
+				Times(curTest.countSetReqId)
+		} else {
+			mockCheckError.
+				EXPECT().
+				SetRequestIdUser(UnknownReqId).
+				Times(curTest.countSetReqId)
+		}
 
 		mockCheckError.
 			EXPECT().
@@ -121,7 +157,6 @@ func TestCreateLinkShortHandler(t *testing.T) {
 		linkShortApi := LinkShortApi{Application: mockApplication, Logger: mockMultiLogger, CheckErrors: mockCheckError}
 		t.Run(curTest.testName, func(t *testing.T) {
 			linkShortApi.CreateLinkShortHandler(&ctxIn)
-			//println(string(ctxIn.Response.Body()))
 			require.Equal(
 				t,
 				ctxExpected.Response.Body(),
@@ -130,4 +165,94 @@ func TestCreateLinkShortHandler(t *testing.T) {
 			)
 		})
 	}
+}
+
+var oldCreateLinkShortHandler = []struct {
+	testName            string
+	inputValueReqId     interface{}
+	inputValueUnmarshal []byte
+	out                 []byte
+	//errorf
+	inputErrorfArgs   []interface{}
+	inputErrorfFormat string
+	countErrorf       int
+	//warnf
+	inputWarnfArgs   []interface{}
+	inputWarnfFormat string
+	countWarnf       int
+	//app
+	inputCreateLinkShortApp string
+	outCreatLinkShortApp    string
+	//CheckErrors
+	errCreateLSHApp      error
+	countCreateLSHApp    int
+	inputCheckError      error
+	outCheckErrTypeError error
+	//outCheckErrResultString string
+	outCheckErrResultBytes []byte
+	outCheckErrCodeHTTP    error
+}{
+	{
+		testName:                "Successful CreateLinkShort handler",
+		inputValueReqId:         10,
+		inputValueUnmarshal:     []byte("{\"link\":\"www.mail.ru\"}"),
+		out:                     []byte("{\"status\":201,\"body\":{\"link_short\":{\"link\":\"hf89h4qwer\"}}}"),
+		countErrorf:             0,
+		countWarnf:              0,
+		inputCreateLinkShortApp: "www.mail.ru",
+		outCreatLinkShortApp:    "hf89h4qwer",
+		errCreateLSHApp:         nil,
+		countCreateLSHApp:       1,
+	},
+	{
+		testName:                "Error reqId ",
+		inputValueReqId:         nil,
+		inputValueUnmarshal:     []byte("{\"link\":\"www.mail.ru\"}"),
+		out:                     []byte("{\"status\":201,\"body\":{\"link_short\":{\"link\":\"hf89h4qwer\"}}}"),
+		inputErrorfArgs:         []interface{}{"expected type string or int"},
+		inputErrorfFormat:       "%s",
+		countErrorf:             1,
+		countWarnf:              0,
+		inputCreateLinkShortApp: "www.mail.ru",
+		outCreatLinkShortApp:    "hf89h4qwer",
+		errCreateLSHApp:         nil,
+		countCreateLSHApp:       1,
+	}, {
+		testName:            "Error unmarshal ",
+		inputValueReqId:     "1",
+		inputValueUnmarshal: []byte("{{\"link\":\"www.mail.ru\"}"),
+		out:                 []byte(errPkg.ErrUnmarshal),
+		inputErrorfArgs:     []interface{}{errPkg.ErrUnmarshal, "invalid character '{' looking for beginning of object key string", 1},
+		inputErrorfFormat:   "%s, %s, requestId: %d",
+		countErrorf:         1,
+		countWarnf:          0,
+		errCreateLSHApp:     nil,
+		countCreateLSHApp:   0,
+	}, {
+		testName:                "Error checkError warnf ",
+		inputValueReqId:         "1",
+		inputValueUnmarshal:     []byte("{\"link\":\"www.mail.ru\"}"),
+		out:                     []byte("{\"status\":409,\"explain\":\"link is not unique CreateLinkShortPostgres\"}"),
+		countErrorf:             0,
+		inputWarnfArgs:          []interface{}{"link is not unique CreateLinkShortPostgres", 1},
+		inputWarnfFormat:        "%s, requestId: %d",
+		countWarnf:              1,
+		inputCreateLinkShortApp: "www.mail.ru",
+		outCreatLinkShortApp:    "",
+		errCreateLSHApp:         errors.New(errPkg.LSHCreateLinkShortNotInsertUnique),
+		countCreateLSHApp:       1,
+	}, {
+		testName:                "Error checkError errorf ",
+		inputValueReqId:         "1",
+		inputValueUnmarshal:     []byte("{\"link\":\"www.mail.ru\"}"),
+		out:                     []byte("{\"status\":500,\"explain\":\"" + errPkg.ErrDB + "\"}"),
+		inputErrorfArgs:         []interface{}{"transaction Create Link Short not create CreateLinkShortPostgres", 1},
+		inputErrorfFormat:       "%s, requestId: %d",
+		countErrorf:             1,
+		countWarnf:              0,
+		inputCreateLinkShortApp: "www.mail.ru",
+		outCreatLinkShortApp:    "",
+		errCreateLSHApp:         errors.New(errPkg.LSHCreateLinkShortTransactionNotCreate),
+		countCreateLSHApp:       1,
+	},
 }

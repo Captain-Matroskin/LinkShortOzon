@@ -14,6 +14,8 @@ import (
 	"net/http"
 )
 
+var UnknownReqId = -1
+
 type LinkShortApiInterface interface {
 	CreateLinkShortHandler(ctx *fasthttp.RequestCtx)
 	TakeLinkShortHandler(ctx *fasthttp.RequestCtx)
@@ -33,8 +35,11 @@ func (l *LinkShortApi) CreateLinkShortHandler(ctx *fasthttp.RequestCtx) {
 		ctx.Response.SetBody([]byte(errConvert.Error()))
 		l.Logger.Errorf("%s", errConvert.Error())
 	}
-
-	l.CheckErrors.SetRequestIdUser(reqId)
+	if reqId != errPkg.IntNil {
+		l.CheckErrors.SetRequestIdUser(reqId)
+	} else {
+		l.CheckErrors.SetRequestIdUser(UnknownReqId)
+	}
 
 	var linkFullIn linkShort.LinkFull
 	errUnmarshal := json.Unmarshal(ctx.Request.Body(), &linkFullIn)
@@ -90,7 +95,11 @@ func (l *LinkShortApi) TakeLinkShortHandler(ctx *fasthttp.RequestCtx) {
 		l.Logger.Errorf("%s", errConvert.Error())
 	}
 
-	l.CheckErrors.SetRequestIdUser(reqId)
+	if reqId != errPkg.IntNil {
+		l.CheckErrors.SetRequestIdUser(reqId)
+	} else {
+		l.CheckErrors.SetRequestIdUser(UnknownReqId)
+	}
 
 	var linkShortIn linkShort.LinkShort
 	errUnmarshal := json.Unmarshal(ctx.Request.Body(), &linkShortIn)

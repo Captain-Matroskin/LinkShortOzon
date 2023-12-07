@@ -45,6 +45,7 @@ func SetUp(connectionDB orm.ConnectionPostgresInterface, redisConn orm.Connectio
 
 	middlewareApi := apiMiddle.MiddlewareApi{
 		Logger: logger,
+		ReqId:  1,
 	}
 	var _ apiMiddle.MiddlewareApiInterface = &middlewareApi
 
