@@ -8,6 +8,7 @@ import (
 	"github.com/valyala/fasthttp"
 	"linkShortOzon/internals/linkShort/api/mocks"
 	errPkg "linkShortOzon/internals/myerror"
+	"net/http"
 	"testing"
 )
 
@@ -47,7 +48,6 @@ type testAppCreateLinkShort struct {
 }
 
 type testCheckErrorCreateLSH struct {
-	inError     error
 	outErr      error
 	outResult   []byte
 	outCodeHTTP int
@@ -56,7 +56,7 @@ type testCheckErrorCreateLSH struct {
 
 var createLinkShortHandler = []testApiCreateLinkShortHandler{
 	{
-		testName: "Successful CreateLinkShort handler",
+		testName: "CreateLinkShort handler: successful",
 		reqId:    10,
 		reqIdInt: 10,
 		body:     []byte("{\"link\":\"www.site.ru\"}"),
@@ -70,7 +70,6 @@ var createLinkShortHandler = []testApiCreateLinkShortHandler{
 			count:     1,
 		},
 		checkError: testCheckErrorCreateLSH{
-			inError:     nil,
 			outErr:      nil,
 			outResult:   nil,
 			outCodeHTTP: errPkg.IntNil,
@@ -80,7 +79,7 @@ var createLinkShortHandler = []testApiCreateLinkShortHandler{
 		outBody:       []byte("{\"status\":201,\"body\":{\"link_short\":{\"link\":\"hf89h4qwer\"}}}"),
 	},
 	{
-		testName: "Error request id",
+		testName: "CreateLinkShort handler: (error) reqId",
 		reqId:    nil,
 		reqIdInt: 0,
 		body:     []byte("{\"link\":\"www.site.ru\"}"),
@@ -96,7 +95,6 @@ var createLinkShortHandler = []testApiCreateLinkShortHandler{
 			count:     1,
 		},
 		checkError: testCheckErrorCreateLSH{
-			inError:     nil,
 			outErr:      nil,
 			outResult:   nil,
 			outCodeHTTP: errPkg.IntNil,
@@ -104,6 +102,74 @@ var createLinkShortHandler = []testApiCreateLinkShortHandler{
 		},
 		countSetReqId: 1,
 		outBody:       []byte("{\"status\":201,\"body\":{\"link_short\":{\"link\":\"hf89h4qwer\"}}}"),
+	},
+	{
+		testName: "CreateLinkShort handler: (error) unmarshall body",
+		reqId:    10,
+		reqIdInt: 10,
+		body:     []byte("{{{\"link\":\"www.site.ru\"}"),
+		logger: testLogger{
+			errorf: loggerErrorf{
+				format: "%s, %s, requestId: %d",
+				args: []interface{}{errPkg.ErrUnmarshal,
+					"invalid character '{' looking for beginning of object key string", 10},
+				count: 1,
+			},
+		},
+		App: testAppCreateLinkShort{
+			count: 0,
+		},
+		checkError: testCheckErrorCreateLSH{
+			count: 0,
+		},
+		countSetReqId: 1,
+		outBody:       []byte(errPkg.ErrUnmarshal),
+	},
+	{
+		testName: "CreateLinkShort handler: (error) CheckErrorCreateLinkShort - errMarshall",
+		reqId:    10,
+		reqIdInt: 10,
+		body:     []byte("{\"link\":\"www.site.ru\"}"),
+		logger: testLogger{
+			errorf: loggerErrorf{count: 0},
+		},
+		App: testAppCreateLinkShort{
+			in:        "www.site.ru",
+			outResult: "",
+			outErr:    errors.New(errPkg.LSHCreateLinkShortAppNotGenerate),
+			count:     1,
+		},
+		checkError: testCheckErrorCreateLSH{
+			outErr:      errors.New(errPkg.ErrMarshal),
+			outResult:   nil,
+			outCodeHTTP: http.StatusInternalServerError,
+			count:       1,
+		},
+		countSetReqId: 1,
+		outBody:       []byte(errPkg.ErrMarshal),
+	},
+	{
+		testName: "CreateLinkShort handler: (error) CheckErrorCreateLinkShort - errCheck",
+		reqId:    10,
+		reqIdInt: 10,
+		body:     []byte("{\"link\":\"www.site.ru\"}"),
+		logger: testLogger{
+			errorf: loggerErrorf{count: 0},
+		},
+		App: testAppCreateLinkShort{
+			in:        "www.site.ru",
+			outResult: "",
+			outErr:    errors.New(errPkg.LSHCreateLinkShortAppNotGenerate),
+			count:     1,
+		},
+		checkError: testCheckErrorCreateLSH{
+			outErr:      errors.New(errPkg.ErrCheck),
+			outResult:   nil,
+			outCodeHTTP: http.StatusInternalServerError,
+			count:       1,
+		},
+		countSetReqId: 1,
+		outBody:       nil,
 	},
 }
 
@@ -150,7 +216,7 @@ func TestCreateLinkShortHandler(t *testing.T) {
 
 		mockCheckError.
 			EXPECT().
-			CheckErrorCreateLinkShort(curTest.checkError.inError).
+			CheckErrorCreateLinkShort(curTest.App.outErr).
 			Return(curTest.checkError.outErr, curTest.checkError.outResult, curTest.checkError.outCodeHTTP).
 			Times(curTest.checkError.count)
 
