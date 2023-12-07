@@ -95,11 +95,15 @@ var CreateLinkShortHandler = []struct {
 func TestCreateLinkShortHandler(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	ctrlApp := gomock.NewController(t)
+	ctrlCheckError := gomock.NewController(t)
 	defer ctrl.Finish()
 	defer ctrlApp.Finish()
 
 	mockMultilogger := mocks.NewMockMultiLoggerInterface(ctrl)
 	mockApplication := mocks.NewMockLinkShortAppInterface(ctrlApp)
+	mockCheckError := mocks.NewMockCheckErrorInterface(ctrlCheckError)
+
+	_ = mockCheckError //TODO(N): delete
 	for _, tt := range CreateLinkShortHandler {
 		ctxIn := fasthttp.RequestCtx{}
 		ctxIn.SetUserValue("reqId", tt.inputValueReqId)

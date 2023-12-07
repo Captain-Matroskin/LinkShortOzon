@@ -10,11 +10,16 @@ type CheckErrorInterface interface {
 	CheckErrorTakeLinkShort(err error) (error, []byte, int)
 	CheckErrorCreateLinkShortGrpc(err error) (error, string, int)
 	CheckErrorTakeLinkFullGrpc(err error) (error, string, int)
+	SetRequestIdUser(reqId int)
 }
 
 type CheckError struct {
 	RequestId int
 	Logger    MultiLoggerInterface
+}
+
+func (c *CheckError) SetRequestIdUser(reqId int) {
+	c.RequestId = reqId
 }
 
 func (c *CheckError) CheckErrorCreateLinkShort(err error) (error, []byte, int) {

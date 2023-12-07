@@ -21,6 +21,7 @@ type LinkShortApiInterface interface {
 
 type LinkShortApi struct {
 	Application application.LinkShortAppInterface
+	CheckErrors errPkg.CheckErrorInterface
 	Logger      errPkg.MultiLoggerInterface
 }
 
@@ -33,10 +34,12 @@ func (l *LinkShortApi) CreateLinkShortHandler(ctx *fasthttp.RequestCtx) {
 		l.Logger.Errorf("%s", errConvert.Error())
 	}
 
-	checkError := &errPkg.CheckError{
-		RequestId: reqId,
-		Logger:    l.Logger,
-	}
+	l.CheckErrors.SetRequestIdUser(reqId)
+
+	//checkError := &errPkg.CheckError{
+	//	RequestId: reqId,
+	//	Logger:    l.Logger,
+	//}
 
 	var linkFullIn linkShort.LinkFull
 	errUnmarshal := json.Unmarshal(ctx.Request.Body(), &linkFullIn)
@@ -49,7 +52,7 @@ func (l *LinkShortApi) CreateLinkShortHandler(ctx *fasthttp.RequestCtx) {
 
 	linkShortOut, errIn := l.Application.CreateLinkShortApp(linkFullIn.Link)
 
-	errOut, resultOut, codeHTTP := checkError.CheckErrorCreateLinkShort(errIn)
+	errOut, resultOut, codeHTTP := l.CheckErrors.CheckErrorCreateLinkShort(errIn)
 	if errOut != nil {
 		switch errOut.Error() {
 		case errPkg.ErrMarshal:
@@ -92,10 +95,12 @@ func (l *LinkShortApi) TakeLinkShortHandler(ctx *fasthttp.RequestCtx) {
 		l.Logger.Errorf("%s", errConvert.Error())
 	}
 
-	checkError := &errPkg.CheckError{
-		RequestId: reqId,
-		Logger:    l.Logger,
-	}
+	l.CheckErrors.SetRequestIdUser(reqId)
+
+	//checkError := &errPkg.CheckError{
+	//	RequestId: reqId,
+	//	Logger:    l.Logger,
+	//}
 
 	var linkShortIn linkShort.LinkShort
 	errUnmarshal := json.Unmarshal(ctx.Request.Body(), &linkShortIn)
@@ -108,7 +113,7 @@ func (l *LinkShortApi) TakeLinkShortHandler(ctx *fasthttp.RequestCtx) {
 
 	linkFullOut, errIn := l.Application.TakeLinkFullApp(linkShortIn.Link)
 
-	errOut, resultOut, codeHTTP := checkError.CheckErrorTakeLinkShort(errIn)
+	errOut, resultOut, codeHTTP := l.CheckErrors.CheckErrorTakeLinkShort(errIn)
 	if errOut != nil {
 		switch errOut.Error() {
 		case errPkg.ErrMarshal:
