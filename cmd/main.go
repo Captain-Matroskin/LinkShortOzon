@@ -95,7 +95,7 @@ func runServer() {
 	linkShort := versionGroup.Group("/linkShort")
 
 	linkShort.POST("/", linkShortApi.CreateLinkShortHandler)
-	linkShort.GET("/", linkShortApi.TakeLinkShortHandler)
+	linkShort.GET("/", linkShortApi.TakeLinkFullHandler)
 	//myRouter.GET("/health", )
 	addresGrpc := configMain.Main.HostGrpc + ":" + configMain.Main.PortGrpc
 

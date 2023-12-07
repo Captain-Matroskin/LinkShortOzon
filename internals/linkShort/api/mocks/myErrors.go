@@ -65,6 +65,22 @@ func (mr *MockCheckErrorInterfaceMockRecorder) CheckErrorCreateLinkShortGrpc(arg
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckErrorCreateLinkShortGrpc", reflect.TypeOf((*MockCheckErrorInterface)(nil).CheckErrorCreateLinkShortGrpc), arg0)
 }
 
+// CheckErrorTakeLinkFull mocks base method.
+func (m *MockCheckErrorInterface) CheckErrorTakeLinkFull(arg0 error) (error, []byte, int) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CheckErrorTakeLinkFull", arg0)
+	ret0, _ := ret[0].(error)
+	ret1, _ := ret[1].([]byte)
+	ret2, _ := ret[2].(int)
+	return ret0, ret1, ret2
+}
+
+// CheckErrorTakeLinkFull indicates an expected call of CheckErrorTakeLinkFull.
+func (mr *MockCheckErrorInterfaceMockRecorder) CheckErrorTakeLinkFull(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckErrorTakeLinkFull", reflect.TypeOf((*MockCheckErrorInterface)(nil).CheckErrorTakeLinkFull), arg0)
+}
+
 // CheckErrorTakeLinkFullGrpc mocks base method.
 func (m *MockCheckErrorInterface) CheckErrorTakeLinkFullGrpc(arg0 error) (error, string, int) {
 	m.ctrl.T.Helper()
@@ -79,22 +95,6 @@ func (m *MockCheckErrorInterface) CheckErrorTakeLinkFullGrpc(arg0 error) (error,
 func (mr *MockCheckErrorInterfaceMockRecorder) CheckErrorTakeLinkFullGrpc(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckErrorTakeLinkFullGrpc", reflect.TypeOf((*MockCheckErrorInterface)(nil).CheckErrorTakeLinkFullGrpc), arg0)
-}
-
-// CheckErrorTakeLinkShort mocks base method.
-func (m *MockCheckErrorInterface) CheckErrorTakeLinkShort(arg0 error) (error, []byte, int) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CheckErrorTakeLinkShort", arg0)
-	ret0, _ := ret[0].(error)
-	ret1, _ := ret[1].([]byte)
-	ret2, _ := ret[2].(int)
-	return ret0, ret1, ret2
-}
-
-// CheckErrorTakeLinkShort indicates an expected call of CheckErrorTakeLinkShort.
-func (mr *MockCheckErrorInterfaceMockRecorder) CheckErrorTakeLinkShort(arg0 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckErrorTakeLinkShort", reflect.TypeOf((*MockCheckErrorInterface)(nil).CheckErrorTakeLinkShort), arg0)
 }
 
 // SetRequestIdUser mocks base method.

@@ -18,7 +18,7 @@ var UnknownReqId = -1
 
 type LinkShortApiInterface interface {
 	CreateLinkShortHandler(ctx *fasthttp.RequestCtx)
-	TakeLinkShortHandler(ctx *fasthttp.RequestCtx)
+	TakeLinkFullHandler(ctx *fasthttp.RequestCtx)
 }
 
 type LinkShortApi struct {
@@ -86,7 +86,7 @@ func (l *LinkShortApi) CreateLinkShortHandler(ctx *fasthttp.RequestCtx) {
 	ctx.Response.SetStatusCode(http.StatusOK)
 }
 
-func (l *LinkShortApi) TakeLinkShortHandler(ctx *fasthttp.RequestCtx) {
+func (l *LinkShortApi) TakeLinkFullHandler(ctx *fasthttp.RequestCtx) {
 	reqIdCtx := ctx.UserValue("reqId")
 	reqId, errConvert := util.InterfaceConvertInt(reqIdCtx)
 	if errConvert != nil {
@@ -112,7 +112,7 @@ func (l *LinkShortApi) TakeLinkShortHandler(ctx *fasthttp.RequestCtx) {
 
 	linkFullOut, errIn := l.Application.TakeLinkFullApp(linkShortIn.Link)
 
-	errOut, resultOut, codeHTTP := l.CheckErrors.CheckErrorTakeLinkShort(errIn)
+	errOut, resultOut, codeHTTP := l.CheckErrors.CheckErrorTakeLinkFull(errIn)
 	if errOut != nil {
 		switch errOut.Error() {
 		case errPkg.ErrMarshal:
