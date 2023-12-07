@@ -36,11 +36,6 @@ func (l *LinkShortApi) CreateLinkShortHandler(ctx *fasthttp.RequestCtx) {
 
 	l.CheckErrors.SetRequestIdUser(reqId)
 
-	//checkError := &errPkg.CheckError{
-	//	RequestId: reqId,
-	//	Logger:    l.Logger,
-	//}
-
 	var linkFullIn linkShort.LinkFull
 	errUnmarshal := json.Unmarshal(ctx.Request.Body(), &linkFullIn)
 	if errUnmarshal != nil {
@@ -96,11 +91,6 @@ func (l *LinkShortApi) TakeLinkShortHandler(ctx *fasthttp.RequestCtx) {
 	}
 
 	l.CheckErrors.SetRequestIdUser(reqId)
-
-	//checkError := &errPkg.CheckError{
-	//	RequestId: reqId,
-	//	Logger:    l.Logger,
-	//}
 
 	var linkShortIn linkShort.LinkShort
 	errUnmarshal := json.Unmarshal(ctx.Request.Body(), &linkShortIn)

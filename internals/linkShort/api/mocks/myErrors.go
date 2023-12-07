@@ -96,3 +96,15 @@ func (mr *MockCheckErrorInterfaceMockRecorder) CheckErrorTakeLinkShort(arg0 inte
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckErrorTakeLinkShort", reflect.TypeOf((*MockCheckErrorInterface)(nil).CheckErrorTakeLinkShort), arg0)
 }
+
+// SetRequestIdUser mocks base method.
+func (m *MockCheckErrorInterface) SetRequestIdUser(arg0 int) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "SetRequestIdUser", arg0)
+}
+
+// SetRequestIdUser indicates an expected call of SetRequestIdUser.
+func (mr *MockCheckErrorInterfaceMockRecorder) SetRequestIdUser(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetRequestIdUser", reflect.TypeOf((*MockCheckErrorInterface)(nil).SetRequestIdUser), arg0)
+}

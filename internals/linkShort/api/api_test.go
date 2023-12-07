@@ -1,7 +1,6 @@
 package api
 
 import (
-	"errors"
 	"fmt"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
@@ -11,130 +10,123 @@ import (
 	"testing"
 )
 
-var CreateLinkShortHandler = []struct {
-	testName                string
-	inputValueReqId         interface{}
-	inputValueUnmarshal     []byte
-	out                     []byte
-	inputErrorfArgs         []interface{}
-	inputErrorfFormat       string
-	countErrorf             int
-	inputWarnfArgs          []interface{}
-	inputWarnfFormat        string
-	countWarnf              int
-	inputCreateLinkShortApp string
-	outCreatLinkShortApp    string
-	errCreate               error
-	countCreate             int
-}{
+type testApiCreateLinkShortHandler struct {
+	testName      string
+	reqId         int
+	body          []byte
+	logger        testLogger
+	App           testAppCreateLinkShort
+	checkError    testCheckErrorCreateLSH
+	countSetReqId int
+	outBody       []byte
+}
+
+type testLogger struct {
+	errorf loggerErrorf
+}
+
+//type loggerWarnf struct {
+//	args   []interface{}
+//	format string
+//	count  int
+//}
+
+type loggerErrorf struct {
+	args   []interface{}
+	format string
+	count  int
+}
+
+type testAppCreateLinkShort struct {
+	in        string
+	outResult string
+	outErr    error
+	count     int
+}
+
+type testCheckErrorCreateLSH struct {
+	inError     error
+	outErr      error
+	outResult   []byte
+	outCodeHTTP int
+	count       int
+}
+
+var createLinkShortHandler = []testApiCreateLinkShortHandler{
 	{
-		testName:                "Successful CreateLinkShort handler",
-		inputValueReqId:         10,
-		inputValueUnmarshal:     []byte("{\"link\":\"www.mail.ru\"}"),
-		out:                     []byte("{\"status\":201,\"body\":{\"link_short\":{\"link\":\"hf89h4qwer\"}}}"),
-		countErrorf:             0,
-		countWarnf:              0,
-		inputCreateLinkShortApp: "www.mail.ru",
-		outCreatLinkShortApp:    "hf89h4qwer",
-		errCreate:               nil,
-		countCreate:             1,
-	},
-	{
-		testName:                "Error reqId ",
-		inputValueReqId:         nil,
-		inputValueUnmarshal:     []byte("{\"link\":\"www.mail.ru\"}"),
-		out:                     []byte("{\"status\":201,\"body\":{\"link_short\":{\"link\":\"hf89h4qwer\"}}}"),
-		inputErrorfArgs:         []interface{}{"expected type string or int"},
-		inputErrorfFormat:       "%s",
-		countErrorf:             1,
-		countWarnf:              0,
-		inputCreateLinkShortApp: "www.mail.ru",
-		outCreatLinkShortApp:    "hf89h4qwer",
-		errCreate:               nil,
-		countCreate:             1,
-	}, {
-		testName:            "Error unmarshal ",
-		inputValueReqId:     "1",
-		inputValueUnmarshal: []byte("{{\"link\":\"www.mail.ru\"}"),
-		out:                 []byte(errPkg.ErrUnmarshal),
-		inputErrorfArgs:     []interface{}{errPkg.ErrUnmarshal, "invalid character '{' looking for beginning of object key string", 1},
-		inputErrorfFormat:   "%s, %s, requestId: %d",
-		countErrorf:         1,
-		countWarnf:          0,
-		errCreate:           nil,
-		countCreate:         0,
-	}, {
-		testName:                "Error checkError warnf ",
-		inputValueReqId:         "1",
-		inputValueUnmarshal:     []byte("{\"link\":\"www.mail.ru\"}"),
-		out:                     []byte("{\"status\":409,\"explain\":\"link is not unique CreateLinkShortPostgres\"}"),
-		countErrorf:             0,
-		inputWarnfArgs:          []interface{}{"link is not unique CreateLinkShortPostgres", 1},
-		inputWarnfFormat:        "%s, requestId: %d",
-		countWarnf:              1,
-		inputCreateLinkShortApp: "www.mail.ru",
-		outCreatLinkShortApp:    "",
-		errCreate:               errors.New(errPkg.LSHCreateLinkShortNotInsertUnique),
-		countCreate:             1,
-	}, {
-		testName:                "Error checkError errorf ",
-		inputValueReqId:         "1",
-		inputValueUnmarshal:     []byte("{\"link\":\"www.mail.ru\"}"),
-		out:                     []byte("{\"status\":500,\"explain\":\"" + errPkg.ErrDB + "\"}"),
-		inputErrorfArgs:         []interface{}{"transaction Create Link Short not create CreateLinkShortPostgres", 1},
-		inputErrorfFormat:       "%s, requestId: %d",
-		countErrorf:             1,
-		countWarnf:              0,
-		inputCreateLinkShortApp: "www.mail.ru",
-		outCreatLinkShortApp:    "",
-		errCreate:               errors.New(errPkg.LSHCreateLinkShortTransactionNotCreate),
-		countCreate:             1,
+		testName: "Successful CreateLinkShort handler",
+		reqId:    10,
+		body:     []byte("{\"link\":\"www.site.ru\"}"),
+		logger: testLogger{
+			errorf: loggerErrorf{count: 0},
+		},
+		App: testAppCreateLinkShort{
+			in:        "www.site.ru",
+			outResult: "hf89h4qwer",
+			outErr:    nil,
+			count:     1,
+		},
+		checkError: testCheckErrorCreateLSH{
+			inError:     nil,
+			outErr:      nil,
+			outResult:   nil,
+			outCodeHTTP: errPkg.IntNil,
+			count:       1,
+		},
+		countSetReqId: 1,
+		outBody:       []byte("{\"status\":201,\"body\":{\"link_short\":{\"link\":\"hf89h4qwer\"}}}"),
 	},
 }
 
 func TestCreateLinkShortHandler(t *testing.T) {
-	ctrl := gomock.NewController(t)
+	ctrlMultiLogger := gomock.NewController(t)
 	ctrlApp := gomock.NewController(t)
 	ctrlCheckError := gomock.NewController(t)
-	defer ctrl.Finish()
+	defer ctrlMultiLogger.Finish()
 	defer ctrlApp.Finish()
+	defer ctrlCheckError.Finish()
 
-	mockMultilogger := mocks.NewMockMultiLoggerInterface(ctrl)
+	mockMultiLogger := mocks.NewMockMultiLoggerInterface(ctrlMultiLogger)
 	mockApplication := mocks.NewMockLinkShortAppInterface(ctrlApp)
 	mockCheckError := mocks.NewMockCheckErrorInterface(ctrlCheckError)
 
-	_ = mockCheckError //TODO(N): delete
-	for _, tt := range CreateLinkShortHandler {
+	for _, curTest := range createLinkShortHandler {
 		ctxIn := fasthttp.RequestCtx{}
-		ctxIn.SetUserValue("reqId", tt.inputValueReqId)
-		ctxIn.Request.SetBody(tt.inputValueUnmarshal)
+		ctxIn.SetUserValue("reqId", curTest.reqId)
+		ctxIn.Request.SetBody(curTest.body)
 		ctxExpected := fasthttp.RequestCtx{}
-		ctxExpected.Response.SetBody(tt.out)
-		mockMultilogger.
+		ctxExpected.Response.SetBody(curTest.outBody)
+		mockMultiLogger.
 			EXPECT().
-			Errorf(tt.inputErrorfFormat, tt.inputErrorfArgs).
-			Times(tt.countErrorf)
-
-		mockMultilogger.
-			EXPECT().
-			Warnf(tt.inputWarnfFormat, tt.inputWarnfArgs).
-			Times(tt.countWarnf)
+			Errorf(curTest.logger.errorf.format, curTest.logger.errorf.args).
+			Times(curTest.logger.errorf.count)
 
 		mockApplication.
 			EXPECT().
-			CreateLinkShortApp(tt.inputCreateLinkShortApp).
-			Return(tt.outCreatLinkShortApp, tt.errCreate).
-			Times(tt.countCreate)
+			CreateLinkShortApp(curTest.App.in).
+			Return(curTest.App.outResult, curTest.App.outErr).
+			Times(curTest.App.count)
 
-		linkShortApi := LinkShortApi{Application: mockApplication, Logger: mockMultilogger}
-		t.Run(tt.testName, func(t *testing.T) {
+		mockCheckError.
+			EXPECT().
+			SetRequestIdUser(curTest.reqId).
+			Times(curTest.countSetReqId)
+
+		mockCheckError.
+			EXPECT().
+			CheckErrorCreateLinkShort(curTest.checkError.inError).
+			Return(curTest.checkError.outErr, curTest.checkError.outResult, curTest.checkError.outCodeHTTP).
+			Times(curTest.checkError.count)
+
+		linkShortApi := LinkShortApi{Application: mockApplication, Logger: mockMultiLogger, CheckErrors: mockCheckError}
+		t.Run(curTest.testName, func(t *testing.T) {
 			linkShortApi.CreateLinkShortHandler(&ctxIn)
 			//println(string(ctxIn.Response.Body()))
 			require.Equal(
 				t,
 				ctxExpected.Response.Body(),
 				ctxIn.Response.Body(),
-				fmt.Sprintf("Expected: %v\nbut got: %v", ctxExpected.Response.Body(), ctxIn.Response.Body()),
+				fmt.Sprintf("Expected: %s\nbut got: %s", string(ctxExpected.Response.Body()), string(ctxIn.Response.Body())),
 			)
 		})
 	}
