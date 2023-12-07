@@ -16,11 +16,6 @@ func (e *MyErrors) Error() string {
 	return e.Text
 }
 
-type CheckError struct {
-	RequestId int
-	Logger    MultiLoggerInterface
-}
-
 type ResultError struct {
 	Status  int    `json:"status"`
 	Explain string `json:"explain,omitempty"`

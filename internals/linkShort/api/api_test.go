@@ -2,6 +2,11 @@ package api
 
 import (
 	"errors"
+	"fmt"
+	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/require"
+	"github.com/valyala/fasthttp"
+	"linkShortOzon/internals/linkShort/api/mocks"
 	errPkg "linkShortOzon/internals/myerror"
 	"testing"
 )
@@ -88,5 +93,45 @@ var CreateLinkShortHandler = []struct {
 }
 
 func TestCreateLinkShortHandler(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	ctrlApp := gomock.NewController(t)
+	defer ctrl.Finish()
+	defer ctrlApp.Finish()
 
+	mockMultilogger := mocks.NewMockMultiLoggerInterface(ctrl)
+	mockApplication := mocks.NewMockLinkShortAppInterface(ctrlApp)
+	for _, tt := range CreateLinkShortHandler {
+		ctxIn := fasthttp.RequestCtx{}
+		ctxIn.SetUserValue("reqId", tt.inputValueReqId)
+		ctxIn.Request.SetBody(tt.inputValueUnmarshal)
+		ctxExpected := fasthttp.RequestCtx{}
+		ctxExpected.Response.SetBody(tt.out)
+		mockMultilogger.
+			EXPECT().
+			Errorf(tt.inputErrorfFormat, tt.inputErrorfArgs).
+			Times(tt.countErrorf)
+
+		mockMultilogger.
+			EXPECT().
+			Warnf(tt.inputWarnfFormat, tt.inputWarnfArgs).
+			Times(tt.countWarnf)
+
+		mockApplication.
+			EXPECT().
+			CreateLinkShortApp(tt.inputCreateLinkShortApp).
+			Return(tt.outCreatLinkShortApp, tt.errCreate).
+			Times(tt.countCreate)
+
+		linkShortApi := LinkShortApi{Application: mockApplication, Logger: mockMultilogger}
+		t.Run(tt.testName, func(t *testing.T) {
+			linkShortApi.CreateLinkShortHandler(&ctxIn)
+			//println(string(ctxIn.Response.Body()))
+			require.Equal(
+				t,
+				ctxExpected.Response.Body(),
+				ctxIn.Response.Body(),
+				fmt.Sprintf("Expected: %v\nbut got: %v", ctxExpected.Response.Body(), ctxIn.Response.Body()),
+			)
+		})
+	}
 }

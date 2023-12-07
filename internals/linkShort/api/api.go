@@ -1,5 +1,6 @@
 //go:generate mockgen -destination=mocks/api.go -package=mocks linkShortOzon/internals/myerror MultiLoggerInterface
 //go:generate mockgen -destination=mocks/apiApplication.go -package=mocks linkShortOzon/internals/linkShort/application LinkShortAppInterface
+//go:generate mockgen -destination=mocks/myErrors.go -package=mocks linkShortOzon/internals/myerror CheckErrorInterface
 package api
 
 import (

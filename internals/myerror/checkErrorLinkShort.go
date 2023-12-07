@@ -5,6 +5,18 @@ import (
 	"net/http"
 )
 
+type CheckErrorInterface interface {
+	CheckErrorCreateLinkShort(err error) (error, []byte, int)
+	CheckErrorTakeLinkShort(err error) (error, []byte, int)
+	CheckErrorCreateLinkShortGrpc(err error) (error, string, int)
+	CheckErrorTakeLinkFullGrpc(err error) (error, string, int)
+}
+
+type CheckError struct {
+	RequestId int
+	Logger    MultiLoggerInterface
+}
+
 func (c *CheckError) CheckErrorCreateLinkShort(err error) (error, []byte, int) {
 	if err != nil {
 		switch err.Error() {
