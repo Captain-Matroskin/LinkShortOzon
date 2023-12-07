@@ -54,7 +54,6 @@ func SetUp(connectionDB orm.ConnectionPostgresInterface, redisConn orm.Connectio
 	}
 	linkShortManager := api.LinkShortManager{
 		Application: &linkShortApp,
-		Logger:      logger,
 		CheckErrors: &checkErrorApiLSHManager,
 	}
 	var _ api.LinkShortManagerInterface = &linkShortManager

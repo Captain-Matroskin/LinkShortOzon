@@ -14,7 +14,7 @@ import (
 	"net/http"
 )
 
-var UnknownReqId = -1
+const UnknownReqId = -1
 
 type LinkShortApiInterface interface {
 	CreateLinkShortHandler(ctx *fasthttp.RequestCtx)
