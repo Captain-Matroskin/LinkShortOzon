@@ -1,4 +1,4 @@
-//go:generate mockgen -destination=mocks/orm.go -package=mocks linkShortOzon/internals/linkShort/orm/orm.go LinkShortWrapperInterface,ConnectionPostgresInterface,TransactionInterface,ConnectionRedisInterface
+//go:generate mockgen -destination=mocks/orm.go -package=mocks linkShortOzon/internals/linkShort/orm LinkShortWrapperInterface,ConnectionPostgresInterface,TransactionInterface,ConnectionRedisInterface
 
 package orm
 
