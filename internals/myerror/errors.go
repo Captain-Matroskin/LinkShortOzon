@@ -41,6 +41,7 @@ const (
 	MCreateDBFileNotFound         = "createtables.sql not found"
 	MCreateDBFileNotCreate        = "table not create"
 	MCreateDBNotCommit            = "transaction setup not commit"
+	MMigrateDontNeeded            = "no database migration needed"
 )
 
 // Error of LinkShort
