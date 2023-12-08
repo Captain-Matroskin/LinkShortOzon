@@ -1,7 +1,11 @@
+//go:generate mockgen -destination=mocks/api.go -package=mocks linkShortOzon/internals/myerror MultiLoggerInterface
+//go:generate mockgen -destination=mocks/apiApplication.go -package=mocks linkShortOzon/internals/linkShort/application LinkShortAppInterface
+//go:generate mockgen -destination=mocks/myErrors.go -package=mocks linkShortOzon/internals/myerror CheckErrorInterface
 package api
 
 import (
 	"encoding/json"
+	_ "github.com/golang/mock/mockgen/model"
 	"github.com/valyala/fasthttp"
 	"linkShortOzon/internals/linkShort"
 	"linkShortOzon/internals/linkShort/application"
@@ -10,13 +14,16 @@ import (
 	"net/http"
 )
 
+const UnknownReqId = -1
+
 type LinkShortApiInterface interface {
 	CreateLinkShortHandler(ctx *fasthttp.RequestCtx)
-	TakeLinkShortHandler(ctx *fasthttp.RequestCtx)
+	TakeLinkFullHandler(ctx *fasthttp.RequestCtx)
 }
 
 type LinkShortApi struct {
 	Application application.LinkShortAppInterface
+	CheckErrors errPkg.CheckErrorInterface
 	Logger      errPkg.MultiLoggerInterface
 }
 
@@ -28,10 +35,10 @@ func (l *LinkShortApi) CreateLinkShortHandler(ctx *fasthttp.RequestCtx) {
 		ctx.Response.SetBody([]byte(errConvert.Error()))
 		l.Logger.Errorf("%s", errConvert.Error())
 	}
-
-	checkError := &errPkg.CheckError{
-		RequestId: reqId,
-		Logger:    l.Logger,
+	if reqId != errPkg.IntNil {
+		l.CheckErrors.SetRequestIdUser(reqId)
+	} else {
+		l.CheckErrors.SetRequestIdUser(UnknownReqId)
 	}
 
 	var linkFullIn linkShort.LinkFull
@@ -45,7 +52,7 @@ func (l *LinkShortApi) CreateLinkShortHandler(ctx *fasthttp.RequestCtx) {
 
 	linkShortOut, errIn := l.Application.CreateLinkShortApp(linkFullIn.Link)
 
-	errOut, resultOut, codeHTTP := checkError.CheckErrorCreateLinkShort(errIn)
+	errOut, resultOut, codeHTTP := l.CheckErrors.CheckErrorCreateLinkShort(errIn)
 	if errOut != nil {
 		switch errOut.Error() {
 		case errPkg.ErrMarshal:
@@ -79,7 +86,7 @@ func (l *LinkShortApi) CreateLinkShortHandler(ctx *fasthttp.RequestCtx) {
 	ctx.Response.SetStatusCode(http.StatusOK)
 }
 
-func (l *LinkShortApi) TakeLinkShortHandler(ctx *fasthttp.RequestCtx) {
+func (l *LinkShortApi) TakeLinkFullHandler(ctx *fasthttp.RequestCtx) {
 	reqIdCtx := ctx.UserValue("reqId")
 	reqId, errConvert := util.InterfaceConvertInt(reqIdCtx)
 	if errConvert != nil {
@@ -88,9 +95,10 @@ func (l *LinkShortApi) TakeLinkShortHandler(ctx *fasthttp.RequestCtx) {
 		l.Logger.Errorf("%s", errConvert.Error())
 	}
 
-	checkError := &errPkg.CheckError{
-		RequestId: reqId,
-		Logger:    l.Logger,
+	if reqId != errPkg.IntNil {
+		l.CheckErrors.SetRequestIdUser(reqId)
+	} else {
+		l.CheckErrors.SetRequestIdUser(UnknownReqId)
 	}
 
 	var linkShortIn linkShort.LinkShort
@@ -104,7 +112,7 @@ func (l *LinkShortApi) TakeLinkShortHandler(ctx *fasthttp.RequestCtx) {
 
 	linkFullOut, errIn := l.Application.TakeLinkFullApp(linkShortIn.Link)
 
-	errOut, resultOut, codeHTTP := checkError.CheckErrorTakeLinkShort(errIn)
+	errOut, resultOut, codeHTTP := l.CheckErrors.CheckErrorTakeLinkFull(errIn)
 	if errOut != nil {
 		switch errOut.Error() {
 		case errPkg.ErrMarshal:

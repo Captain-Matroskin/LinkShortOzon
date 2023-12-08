@@ -1,3 +1,5 @@
+//go:generate mockgen -destination=mocks/orm.go -package=mocks linkShortOzon/internals/linkShort/orm LinkShortWrapperInterface,ConnectionPostgresInterface,TransactionInterface,ConnectionRedisInterface
+
 package orm
 
 import (
@@ -87,7 +89,6 @@ func (w *LinkShortWrapper) CreateLinkShortRedis(linkFull string, linkShort strin
 			Text: errPkg.LSHCreateLinkShortExistsRedis,
 		}
 	}
-
 	_, errLinkFull := redis.String(w.ConnRedis.Do("SET", linkFull, linkShort, "EX", 86400))
 	if errLinkFull != nil {
 		return &errPkg.MyErrors{

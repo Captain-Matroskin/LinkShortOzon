@@ -31,19 +31,30 @@ func SetUp(connectionDB orm.ConnectionPostgresInterface, redisConn orm.Connectio
 	linkShortApp := application.LinkShortApp{
 		Wrapper: &linkShortWrapper,
 	}
+
+	checkErrorApiLSH := errPkg.CheckError{
+		Logger: logger,
+	}
+
 	linkShortApi := api.LinkShortApi{
 		Application: &linkShortApp,
 		Logger:      logger,
+		CheckErrors: &checkErrorApiLSH,
 	}
 	var _ api.LinkShortApiInterface = &linkShortApi
 
 	middlewareApi := apiMiddle.MiddlewareApi{
 		Logger: logger,
+		ReqId:  1,
 	}
 	var _ apiMiddle.MiddlewareApiInterface = &middlewareApi
+
+	checkErrorApiLSHManager := errPkg.CheckError{
+		Logger: logger,
+	}
 	linkShortManager := api.LinkShortManager{
 		Application: &linkShortApp,
-		Logger:      logger,
+		CheckErrors: &checkErrorApiLSHManager,
 	}
 	var _ api.LinkShortManagerInterface = &linkShortManager
 

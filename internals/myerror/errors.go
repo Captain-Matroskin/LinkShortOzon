@@ -16,11 +16,6 @@ func (e *MyErrors) Error() string {
 	return e.Text
 }
 
-type CheckError struct {
-	RequestId int
-	Logger    MultiLoggerInterface
-}
-
 type ResultError struct {
 	Status  int    `json:"status"`
 	Explain string `json:"explain,omitempty"`
@@ -51,8 +46,8 @@ const (
 // Error of LinkShort
 const (
 	LSHCreateLinkShortTransactionNotCreate = "transaction Create Link Short not create CreateLinkShortPostgres"
-	LSHCreateLinkShortNotInsert            = "Link short not insert CreateLinkShortPostgres"
-	LSHCreateLinkShortNotCommit            = "Link short not commit CreateLinkShortPostgres"
+	LSHCreateLinkShortNotInsert            = "link short not insert CreateLinkShortPostgres"
+	LSHCreateLinkShortNotCommit            = "link short not commit CreateLinkShortPostgres"
 	LSHCreateLinkShortNotInsertUniqueDB    = "ERROR: duplicate key value violates unique constraint \"link_link_key\" (SQLSTATE 23505)"
 	LSHCreateLinkShortNotInsertUnique      = "link is not unique CreateLinkShortPostgres"
 	LSHCreateLinkShortAppNotGenerate       = "link is not generate CreateLinkShortPostgres"
@@ -60,7 +55,7 @@ const (
 	LSHTakeLinkShortTransactionNotCreate = "transaction Take Link Short not create"
 	LSHTakeLinkShortNotFound             = "link full not found"
 	LSHTakeLinkShortNotScan              = "link full not scan"
-	LSHTakeLinkShortNotCommit            = "Link full not commit"
+	LSHTakeLinkShortNotCommit            = "link full not commit"
 
 	LSHTakeLinkShortNotFoundRedis          = "link full not found"
 	LSHCreateLinkShortExistsRedis          = "link full exists"
