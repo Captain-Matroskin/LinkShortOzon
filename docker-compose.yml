@@ -20,7 +20,7 @@ services:
     volumes:
       - ./config/main.yml:/app/config/main.yml
       - ./config/database.yml:/app/config/database.yml
-      - ./build/postgresql/createtables.sql:/app/build/postgresql/createtables.sql
+      - ./build/migrations/postgresql/001__createtables.sql:/app/build/migrations/postgresql/001__createtables.sql
 
   postgres:
     container_name: BackInfo

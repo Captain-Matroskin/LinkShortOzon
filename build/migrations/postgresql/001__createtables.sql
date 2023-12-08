@@ -4,3 +4,7 @@ CREATE TABLE IF NOT EXISTS link
     link text UNIQUE NOT NULL,
     link_short text UNIQUE NOT NULL
 );
+
+---- create above / drop below ----
+
+DROP TABLE link;
