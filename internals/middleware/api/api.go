@@ -1,4 +1,3 @@
-//go:generate mockgen -destination=mocks/api.go -package=mocks linkShortOzon/internals/myerror MultiLoggerInterface
 package api
 
 import (
