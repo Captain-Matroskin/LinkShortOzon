@@ -14,7 +14,7 @@ docker-compose -f docker-compose.yml up -d --build
 ## Примеры работы с сервисом
 
 Отправка POST запроса на сокращение ссылки:
-```
+```bash
 curl --header "Content-Type: application/json" \
 --request POST \
 --data '{"link": "www.testSite.ru"}' \
@@ -23,13 +23,20 @@ curl --header "Content-Type: application/json" \
 
 
 Отправка GET запроса на получение полной ссылки по полученной сокращенной:
-```
+```bash
 curl --header "Content-Type: application/json" \
   --request GET \
   --data '{"link": "$shortLink$"}' \
   0.0.0.0:5001/api/v1/linkShort/
 ```
 где *$shortLink$* - это готовая сокращенная ссылка (например "ozon.click.ru/_FeLIUZ33Y").
+
+
+
+Запуск тестов
+```bash
+make test
+```
 
 ## Работа сервиса через GRPC
 Сделан второй сервер, который принимает по grpc. То есть можно пользоваться 
