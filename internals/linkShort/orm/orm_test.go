@@ -92,11 +92,9 @@ var createLinkShort = []createLinkShortPostgres{
 }
 
 func TestCreateLinkShortPostgres(t *testing.T) {
-	ctrlWrapper := gomock.NewController(t)
 	ctrlPostgresConn := gomock.NewController(t)
 	ctrlTransaction := gomock.NewController(t)
 
-	defer ctrlWrapper.Finish()
 	defer ctrlPostgresConn.Finish()
 	defer ctrlTransaction.Finish()
 
@@ -271,11 +269,9 @@ var takeLinkFullPst = []takeLinkFullPostgres{
 }
 
 func TestTakeLinkFullPostgres(t *testing.T) {
-	ctrlWrapper := gomock.NewController(t)
 	ctrlPostgresConn := gomock.NewController(t)
 	ctrlTransaction := gomock.NewController(t)
 
-	defer ctrlWrapper.Finish()
 	defer ctrlPostgresConn.Finish()
 	defer ctrlTransaction.Finish()
 
@@ -336,6 +332,130 @@ func TestTakeLinkFullPostgres(t *testing.T) {
 				linkFull,
 				fmt.Sprintf("Expected: %s\nbut got: %s", curTest.linkFullExpected, linkFull),
 			)
+		})
+	}
+
+}
+
+type createLinkShortRedis struct {
+	testName      string
+	inLinkFull    string
+	inLinkShort   string
+	doRedis       []doRedis
+	errorExpected error
+}
+
+type doRedis struct {
+	commandName string
+	outLink     string
+	outErr      error
+	count       int
+}
+
+var createLinkShortRd = []createLinkShortRedis{
+	{
+		testName:    "createLinkShortRedis: successful",
+		inLinkFull:  "www.site.ru",
+		inLinkShort: "ozon.click.ru/_FeLIUZ33Y",
+		doRedis: []doRedis{
+			{commandName: "GET", outLink: "", outErr: nil, count: 1},
+			{commandName: "SET", outLink: "df", outErr: nil, count: 1},
+			{commandName: "SET", outLink: "df", outErr: nil, count: 1},
+		},
+		errorExpected: nil,
+	},
+	{
+		testName:    "createLinkShortRedis: reateLinkShortExistsRedis",
+		inLinkFull:  "www.site.ru",
+		inLinkShort: "ozon.click.ru/_FeLIUZ33Y",
+		doRedis: []doRedis{
+			{commandName: "GET", outLink: "fd", outErr: nil, count: 1},
+			{commandName: "SET", outLink: "df", outErr: nil, count: 0},
+			{commandName: "SET", outLink: "df", outErr: nil, count: 0},
+		},
+		errorExpected: errors.New(errPkg.LSHCreateLinkShortExistsRedis),
+	},
+	{
+		testName:    "createLinkShortRedis: reateLinkShortExistsRedis",
+		inLinkFull:  "www.site.ru",
+		inLinkShort: "ozon.click.ru/_FeLIUZ33Y",
+		doRedis: []doRedis{
+			{commandName: "GET", outLink: "", outErr: errors.New(errPkg.LSHTakeLinkShortNotFoundRedis), count: 1},
+			{commandName: "SET", outLink: "df", outErr: nil, count: 1},
+			{commandName: "SET", outLink: "df", outErr: nil, count: 1},
+		},
+		errorExpected: nil,
+	},
+	{
+		testName:    "createLinkShortRedis: CreateLinkShortNotSetFullLinkRedis",
+		inLinkFull:  "www.site.ru",
+		inLinkShort: "ozon.click.ru/_FeLIUZ33Y",
+		doRedis: []doRedis{
+			{commandName: "GET", outLink: "", outErr: nil, count: 1},
+			{commandName: "SET", outLink: "", outErr: errors.New(errPkg.LSHCreateLinkShortNotSetFullLinkRedis), count: 1},
+			{commandName: "SET", outLink: "df", outErr: nil, count: 0},
+		},
+		errorExpected: errors.New(errPkg.LSHCreateLinkShortNotSetFullLinkRedis),
+	},
+	{
+		testName:    "createLinkShortRedis: CreateLinkShortNotSetShortLinkRedis",
+		inLinkFull:  "www.site.ru",
+		inLinkShort: "ozon.click.ru/_FeLIUZ33Y",
+		doRedis: []doRedis{
+			{commandName: "GET", outLink: "", outErr: nil, count: 1},
+			{commandName: "SET", outLink: "fd", outErr: nil, count: 1},
+			{commandName: "SET", outLink: "", outErr: errors.New(errPkg.LSHCreateLinkShortNotSetShortLinkRedis), count: 1},
+		},
+		errorExpected: errors.New(errPkg.LSHCreateLinkShortNotSetShortLinkRedis),
+	},
+}
+
+func TestCreateLinkShortRedis(t *testing.T) {
+	ctrlPostgresConn := gomock.NewController(t)
+	ctrlTransaction := gomock.NewController(t)
+
+	defer ctrlPostgresConn.Finish()
+	defer ctrlTransaction.Finish()
+
+	mockRedisConn := mocks.NewMockConnectionRedisInterface(ctrlPostgresConn)
+	for _, curTest := range createLinkShortRd {
+		wrapperOrm := &LinkShortWrapper{
+			ConnRedis: mockRedisConn,
+		}
+		mockRedisConn.
+			EXPECT().
+			Do(curTest.doRedis[0].commandName, curTest.inLinkFull).
+			Return(curTest.doRedis[0].outLink, curTest.doRedis[0].outErr).
+			Times(curTest.doRedis[0].count)
+
+		mockRedisConn.
+			EXPECT().
+			Do(curTest.doRedis[1].commandName, curTest.inLinkFull, curTest.inLinkShort, "EX", 86400).
+			Return(curTest.doRedis[1].outLink, curTest.doRedis[1].outErr).
+			Times(curTest.doRedis[1].count)
+		mockRedisConn.
+			EXPECT().
+			Do(curTest.doRedis[2].commandName, curTest.inLinkShort, curTest.inLinkFull, "EX", 86400).
+			Return(curTest.doRedis[2].outLink, curTest.doRedis[2].outErr).
+			Times(curTest.doRedis[2].count)
+
+		t.Run(curTest.testName, func(t *testing.T) {
+			errCreateLSH := wrapperOrm.CreateLinkShortRedis(curTest.inLinkFull, curTest.inLinkShort)
+			if errCreateLSH != nil && curTest.errorExpected != nil {
+				require.Equal(
+					t,
+					curTest.errorExpected.Error(),
+					errCreateLSH.Error(),
+					fmt.Sprintf("Expected: %s\nbut got: %s", curTest.errorExpected, errCreateLSH),
+				)
+			} else {
+				require.Equal(
+					t,
+					curTest.errorExpected,
+					errCreateLSH,
+					fmt.Sprintf("Expected: %s\nbut got: %s", curTest.errorExpected, errCreateLSH),
+				)
+			}
 		})
 	}
 
