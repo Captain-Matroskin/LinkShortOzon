@@ -18,7 +18,7 @@ type MiddlewareApi struct {
 func (m *MiddlewareApi) LogURL(h fasthttp.RequestHandler) fasthttp.RequestHandler {
 	return fasthttp.RequestHandler(func(ctx *fasthttp.RequestCtx) {
 		if m.ReqId == math.MaxInt {
-			m.ReqId = 0
+			m.ReqId = 1
 		}
 		m.ReqId++
 		m.Logger.Infof("Method: %s, URL: %s, requestId: %d", string(ctx.Method()), ctx.URI(), m.ReqId)

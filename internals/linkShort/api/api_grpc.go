@@ -15,17 +15,13 @@ type LinkShortManagerInterface interface {
 
 type LinkShortManager struct {
 	Application application.LinkShortAppInterface
-	Logger      errPkg.MultiLoggerInterface
+	CheckErrors errPkg.CheckErrorInterface
 }
 
 func (l *LinkShortManager) CreateLinkShort(ctx context.Context, linkFullIn *proto.LinkFull) (*proto.ResultLinkShort, error) {
-	checkError := &errPkg.CheckError{
-		Logger: l.Logger,
-	}
-
 	linkShortOut, errIn := l.Application.CreateLinkShortApp(linkFullIn.LinkFull)
 
-	errOut, resultOut, codeHTTP := checkError.CheckErrorCreateLinkShortGrpc(errIn)
+	errOut, resultOut, codeHTTP := l.CheckErrors.CheckErrorCreateLinkShortGrpc(errIn)
 	if errOut != nil {
 		switch errOut.Error() {
 		case errPkg.ErrCheck:
@@ -41,13 +37,9 @@ func (l *LinkShortManager) CreateLinkShort(ctx context.Context, linkFullIn *prot
 }
 
 func (l *LinkShortManager) TakeLinkFull(ctx context.Context, linkShortIn *proto.LinkShort) (*proto.ResultLinkFull, error) {
-	checkError := &errPkg.CheckError{
-		Logger: l.Logger,
-	}
-
 	linkFullOut, errIn := l.Application.TakeLinkFullApp(linkShortIn.LinkShort)
 
-	errOut, resultOut, codeHTTP := checkError.CheckErrorCreateLinkShortGrpc(errIn)
+	errOut, resultOut, codeHTTP := l.CheckErrors.CheckErrorTakeLinkFullGrpc(errIn)
 	if errOut != nil {
 		switch errOut.Error() {
 		case errPkg.ErrCheck:

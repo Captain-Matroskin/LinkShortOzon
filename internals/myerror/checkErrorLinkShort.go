@@ -1,9 +1,27 @@
+//go:generate mockgen -destination=mocks/api.go -package=mocks linkShortOzon/internals/myerror MultiLoggerInterface
 package myerror
 
 import (
 	"encoding/json"
 	"net/http"
 )
+
+type CheckErrorInterface interface {
+	CheckErrorCreateLinkShort(err error) (error, []byte, int)
+	CheckErrorTakeLinkFull(err error) (error, []byte, int)
+	CheckErrorCreateLinkShortGrpc(err error) (error, string, int)
+	CheckErrorTakeLinkFullGrpc(err error) (error, string, int)
+	SetRequestIdUser(reqId int)
+}
+
+type CheckError struct {
+	RequestId int
+	Logger    MultiLoggerInterface
+}
+
+func (c *CheckError) SetRequestIdUser(reqId int) {
+	c.RequestId = reqId
+}
 
 func (c *CheckError) CheckErrorCreateLinkShort(err error) (error, []byte, int) {
 	if err != nil {
@@ -50,7 +68,7 @@ func (c *CheckError) CheckErrorCreateLinkShort(err error) (error, []byte, int) {
 	return nil, nil, IntNil
 }
 
-func (c *CheckError) CheckErrorTakeLinkShort(err error) (error, []byte, int) {
+func (c *CheckError) CheckErrorTakeLinkFull(err error) (error, []byte, int) {
 	if err != nil {
 		switch err.Error() {
 		case LSHTakeLinkShortNotFound:
