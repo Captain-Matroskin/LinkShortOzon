@@ -3,10 +3,9 @@ package build
 import (
 	"context"
 	"github.com/jackc/pgx/v4/pgxpool"
-	"io/ioutil"
+	"linkShortOzon/build/migrations"
 	"linkShortOzon/config"
 	errPkg "linkShortOzon/internals/myerror"
-	"strings"
 )
 
 func CreateConn(configDB config.DatabasePostgres) (*pgxpool.Pool, error) {
@@ -21,37 +20,23 @@ func CreateConn(configDB config.DatabasePostgres) (*pgxpool.Pool, error) {
 }
 
 func CreateDB(conn *pgxpool.Pool) error {
-	contextTransaction := context.Background()
-	tx, errTransaction := conn.Begin(contextTransaction)
-	if errTransaction != nil {
-		return &errPkg.MyErrors{
-			Text: errPkg.MCreateDBTransactionNotCreate,
-		}
+	migrator, errNewMigrator := migrations.NewMigrator(conn.Config().ConnString())
+	if errNewMigrator != nil {
+		return errNewMigrator
 	}
 
-	defer tx.Rollback(contextTransaction)
-
-	file, errRead := ioutil.ReadFile("./build/postgresql/createtables.sql")
-	if errRead != nil {
-		return &errPkg.MyErrors{
-			Text: errPkg.MCreateDBFileNotFound,
-		}
+	now, exp, _, errMigrInfo := migrator.Info()
+	if errMigrInfo != nil {
+		return errMigrInfo
 	}
-
-	requests := strings.Split(string(file), ";")
-	for _, request := range requests {
-		_, errTransaction = tx.Exec(context.Background(), request)
-		if errTransaction != nil {
-			return &errPkg.MyErrors{
-				Text: errPkg.MCreateDBFileNotCreate,
-			}
+	if now < exp {
+		errMigrate := migrator.Migrate()
+		if errMigrate != nil {
+			return errMigrate
 		}
-	}
-
-	errCommit := tx.Commit(contextTransaction)
-	if errCommit != nil {
+	} else {
 		return &errPkg.MyErrors{
-			Text: errPkg.MCreateDBNotCommit,
+			Text: errPkg.MMigrateDontNeeded,
 		}
 	}
 

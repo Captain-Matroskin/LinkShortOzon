@@ -3,4 +3,4 @@ main:
   portGrpc: 8081
   network: tcp
   portHttp: 5001
-  database: redis # выбор базы данных для запуска
+  database: postgres # выбор базы данных для запуска
