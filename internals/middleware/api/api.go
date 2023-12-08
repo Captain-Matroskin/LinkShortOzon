@@ -15,6 +15,7 @@ type MiddlewareApi struct {
 	Logger errPkg.MultiLoggerInterface
 }
 
+// middleware, даем request id каждому запросу для логов и в дальнейшем, чтобы можно было отслеживать
 func (m *MiddlewareApi) LogURL(h fasthttp.RequestHandler) fasthttp.RequestHandler {
 	return fasthttp.RequestHandler(func(ctx *fasthttp.RequestCtx) {
 		if m.ReqId == math.MaxInt {

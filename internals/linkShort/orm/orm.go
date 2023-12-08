@@ -51,11 +51,13 @@ type ConnectionRedisInterface interface {
 	Receive() (reply interface{}, err error)
 }
 
+// Уровень орм, нижний, где идет работа с разными сервисами, бд и т.д.
 type LinkShortWrapper struct {
 	ConnPostgres ConnectionPostgresInterface
 	ConnRedis    ConnectionRedisInterface
 }
 
+// Вызов необходимой функции из ходя из того, какой коннектор существует
 func (w *LinkShortWrapper) CreateLinkShort(linkFull string, linkShort string) error {
 	if w.ConnPostgres != nil {
 		return w.CreateLinkShortPostgres(linkFull, linkShort)
@@ -69,6 +71,7 @@ func (w *LinkShortWrapper) CreateLinkShort(linkFull string, linkShort string) er
 	}
 }
 
+// Вызов необходимой функции из ходя из того, какой коннектор существует
 func (w *LinkShortWrapper) TakeLinkFull(linkShort string) (string, error) {
 	if w.ConnPostgres != nil {
 		return w.TakeLinkFullPostgres(linkShort)

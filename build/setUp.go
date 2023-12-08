@@ -23,6 +23,7 @@ type InstallSetUp struct {
 	LinkShortManager api.LinkShortManager
 }
 
+// инициализация всех структур для обработчиков
 func SetUp(connectionDB orm.ConnectionPostgresInterface, redisConn orm.ConnectionRedisInterface, logger errPkg.MultiLoggerInterface) *InstallSetUp {
 	linkShortWrapper := orm.LinkShortWrapper{
 		ConnPostgres: connectionDB,
@@ -41,7 +42,8 @@ func SetUp(connectionDB orm.ConnectionPostgresInterface, redisConn orm.Connectio
 		Logger:      logger,
 		CheckErrors: &checkErrorApiLSH,
 	}
-	var _ api.LinkShortApiInterface = &linkShortApi
+	var _ api.LinkShortApiInterface = &linkShortApi //проверка на схожесть интерфейсу,
+	// таким образом, реализация чистой архитектуры для уровня api
 
 	middlewareApi := apiMiddle.MiddlewareApi{
 		Logger: logger,
@@ -66,6 +68,7 @@ func SetUp(connectionDB orm.ConnectionPostgresInterface, redisConn orm.Connectio
 	return &result
 }
 
+// инициализация конфигов
 func InitConfig() (error, []interface{}) {
 	viper.AddConfigPath(ConfPath)
 	viper.SetConfigType(ConfType)

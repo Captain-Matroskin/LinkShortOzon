@@ -14,6 +14,7 @@ type CheckErrorInterface interface {
 	SetRequestIdUser(reqId int)
 }
 
+// Обработчики ошибок для api
 type CheckError struct {
 	RequestId int
 	Logger    MultiLoggerInterface

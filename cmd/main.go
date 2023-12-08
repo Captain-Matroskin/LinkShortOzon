@@ -16,6 +16,7 @@ import (
 	"os"
 )
 
+// Выбор базы данных для запуска
 const (
 	namePostgres = "postgres"
 	nameRedis    = "redis"
@@ -36,7 +37,7 @@ func runServer() {
 			os.Exit(1)
 		}
 	}(logger.Log)
-
+	//инициализация конфигов
 	errConfig, configRes := build.InitConfig()
 	if errConfig != nil {
 		logger.Log.Errorf("%s", errConfig.Error())
@@ -51,6 +52,7 @@ func runServer() {
 		startStructure     *build.InstallSetUp
 	)
 
+	//создания коннекта базы исходя из того, какую мы выбрали в конфиге
 	switch configMain.Main.Database {
 	case namePostgres:
 		var errDB error

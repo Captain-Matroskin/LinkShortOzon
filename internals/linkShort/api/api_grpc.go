@@ -18,6 +18,7 @@ type LinkShortManager struct {
 	CheckErrors errPkg.CheckErrorInterface
 }
 
+// Обработчик grpc запросов на создание сокращенной сылки
 func (l *LinkShortManager) CreateLinkShort(ctx context.Context, linkFullIn *proto.LinkFull) (*proto.ResultLinkShort, error) {
 	linkShortOut, errIn := l.Application.CreateLinkShortApp(linkFullIn.LinkFull)
 
@@ -36,6 +37,7 @@ func (l *LinkShortManager) CreateLinkShort(ctx context.Context, linkFullIn *prot
 
 }
 
+// Обработчик grpc запросов на получение полной ссылки по сокращенной
 func (l *LinkShortManager) TakeLinkFull(ctx context.Context, linkShortIn *proto.LinkShort) (*proto.ResultLinkFull, error) {
 	linkFullOut, errIn := l.Application.TakeLinkFullApp(linkShortIn.LinkShort)
 
