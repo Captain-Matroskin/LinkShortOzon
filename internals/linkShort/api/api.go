@@ -21,12 +21,14 @@ type LinkShortApiInterface interface {
 	TakeLinkFullHandler(ctx *fasthttp.RequestCtx)
 }
 
+// уровень апи
 type LinkShortApi struct {
 	Application application.LinkShortAppInterface
 	CheckErrors errPkg.CheckErrorInterface
 	Logger      errPkg.MultiLoggerInterface
 }
 
+// Обработчик http запросов на создание сокращенной сылки
 func (l *LinkShortApi) CreateLinkShortHandler(ctx *fasthttp.RequestCtx) {
 	reqIdCtx := ctx.UserValue("reqId")
 	reqId, errConvert := util.InterfaceConvertInt(reqIdCtx)
@@ -86,6 +88,7 @@ func (l *LinkShortApi) CreateLinkShortHandler(ctx *fasthttp.RequestCtx) {
 	ctx.Response.SetStatusCode(http.StatusOK)
 }
 
+// Обработчик http запросов на получение полной ссылки по сокращенной
 func (l *LinkShortApi) TakeLinkFullHandler(ctx *fasthttp.RequestCtx) {
 	reqIdCtx := ctx.UserValue("reqId")
 	reqId, errConvert := util.InterfaceConvertInt(reqIdCtx)
