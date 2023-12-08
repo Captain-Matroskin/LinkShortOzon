@@ -171,6 +171,8 @@ linters:
     - protogetter
     - asasalint
     - containedctx
+    - errcheck
+    - gosimple
   fast: false
 
 
