@@ -168,7 +168,6 @@ linters:
     - depguard
     - exhaustruct
     - interfacebloat
-    - protogetter
     - asasalint
     - containedctx
   fast: false
