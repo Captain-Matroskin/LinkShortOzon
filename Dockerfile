@@ -8,7 +8,7 @@ RUN go mod download
 COPY . .
 RUN apk update && apk upgrade && \
     apk --update add git make
-RUN go build -o linkshort ./cmd/main.go
+RUN go build -o linkshort ./cmd/linkShort/main.go
 
 FROM alpine:latest
 RUN apk update && apk upgrade && \

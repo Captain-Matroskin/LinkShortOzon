@@ -14,7 +14,7 @@ const (
 	ConfNameMain = "main"
 	ConfNameDB   = "database"
 	ConfType     = "yml"
-	ConfPath     = "./config/"
+	ConfPath     = "./config/source/"
 )
 
 type InstallSetUp struct {
