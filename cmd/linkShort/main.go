@@ -68,7 +68,7 @@ func runServer() {
 		if errCreateDB != nil {
 			switch errCreateDB.Error() {
 			case errPkg.MMigrateDontNeeded:
-				logger.Log.Infof("CreateDB: %s", errCreateDB.Error())
+				logger.Log.Warnf("CreateDB: %s", errCreateDB.Error())
 
 			default:
 				logger.Log.Errorf("err create database: %s", errCreateDB.Error())
