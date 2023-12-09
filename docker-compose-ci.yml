@@ -1,6 +1,6 @@
 services:
   linkshort:
-    image: matros71239/linkShort:latest
+    image: matros71239/linkshort:latest
     depends_on:
       postgres:
         condition: service_healthy
