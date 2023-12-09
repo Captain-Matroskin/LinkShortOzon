@@ -70,4 +70,4 @@ jobs:
           file: Dockerfile
           platforms: linux/amd64
           push: true
-          tags: matros71239/linkShort:latest
+          tags: matros71239/linkshort:latest
