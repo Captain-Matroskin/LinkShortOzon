@@ -1,0 +1,54 @@
+services:
+  linkshort:
+    image: matros71239/linkshort:latest
+    depends_on:
+      postgres:
+        condition: service_healthy
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: LinkShort
+    logging:
+      driver: syslog
+      options:
+        tag: foo-logs
+    ports:
+      - "5001:5001"
+      - "40001:40001"
+      - "8081:8081"
+    networks:
+      - default
+    volumes:
+      - ./config/main.yml:/app/config/main.yml
+      - ./config/database.yml:/app/config/database.yml
+      - ./build/migrations/postgresql/001__createtables.sql:/app/build/migrations/postgresql/001__createtables.sql
+
+  postgres:
+    container_name: BackInfo
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: matroskin
+      POSTGRES_PASSWORD: 74tbr6r54f
+    ports:
+      - "5435:5432"
+    networks:
+      - default
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U matroskin" ]
+      interval: 5s
+      timeout: 105s
+      retries: 5
+
+  redis:
+    container_name: RedisInfo
+    image: redis:latest
+    restart: always
+    ports:
+      - "6382:6379"
+    environment:
+      - REDIS_PORT=6382
+      - REDIS_DATABASES=16
+
+networks:
+  default:
+    driver: bridge
