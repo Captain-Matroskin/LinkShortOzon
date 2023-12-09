@@ -58,11 +58,11 @@ jobs:
           go-version: '1.20.x'
       - name: add go.sum
         run: go mod tidy
-      - name: Login to DockerHub Registry
+      - name: Login to Docker Hub Registry
         uses: docker/login-action@v3
         with:
-            username: ${{ secrets.DOCKERHUB_USERNAME }}
-            password: ${{ secrets.DOCKERHUB_PASSWORD }}
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
       - name: Build and push linkShort
         uses: docker/build-push-action@v5
         with:
