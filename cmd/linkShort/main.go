@@ -63,10 +63,17 @@ func runServer() {
 		}
 		defer connectionPostgres.Close()
 
+		//Создание БД путем миграции
 		errCreateDB := build.CreateDB(connectionPostgres)
 		if errCreateDB != nil {
-			logger.Log.Errorf("err create database: %s", errCreateDB.Error())
-			os.Exit(4)
+			switch errCreateDB.Error() {
+			case errPkg.MMigrateDontNeeded:
+				logger.Log.Infof("CreateDB: %s", errCreateDB.Error())
+
+			default:
+				logger.Log.Errorf("err create database: %s", errCreateDB.Error())
+				os.Exit(4)
+			}
 		}
 		startStructure = build.SetUp(connectionPostgres, nil, logger.Log)
 		logger.Log.Infof("postgres listen %s:%s", configDB.DbPostgres.Host, configDB.DbPostgres.Port)

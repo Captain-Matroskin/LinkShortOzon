@@ -19,8 +19,7 @@ services:
     networks:
       - default
     volumes:
-      - ./config/main.yml:/app/config/main.yml
-      - ./config/database.yml:/app/config/database.yml
+      - ./config/source:/app/config/source
       - ./build/migrations/postgresql/001__createtables.sql:/app/build/migrations/postgresql/001__createtables.sql
 
   postgres:
